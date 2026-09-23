@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date
 import os
 from typing import Callable
+from uuid import uuid4
 
 from .models import MeetingTask, TranscriptSegment
 
@@ -66,7 +67,7 @@ def analyze_transcript(
                 issues=list(item.get("issues") or []),
                 reviewed=bool(item.get("reviewed", False)),
                 deadline_text=str(due_text) if due_text is not None else None,
-                id=str(item.get("id") or ""),
+                id=str(item.get("id") or uuid4().hex[:12]),
             )
         )
     warnings = [str(value) for value in result.get("warnings", [])]
