@@ -1,0 +1,3 @@
+# Full local speech + diarization stack for the GUI-independent backend.
+# Ollama itself and its model weights are installed separately; see src/README.md.
+-r requirements-diarization.txt
