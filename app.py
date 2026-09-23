@@ -2,6 +2,7 @@
 from __future__ import annotations
 import base64
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
@@ -25,11 +26,19 @@ JOBS_LOCK=threading.Lock()
 POOL=ThreadPoolExecutor(max_workers=1)
 MAX_BODY=28*1024*1024
 
+@contextmanager
 def database():
     DATA.mkdir(exist_ok=True,parents=True)
     db=sqlite3.connect(DATA/'meetings.sqlite3')
-    db.execute('CREATE TABLE IF NOT EXISTS meetings (id TEXT PRIMARY KEY, body TEXT NOT NULL)')
-    return db
+    try:
+        db.execute('CREATE TABLE IF NOT EXISTS meetings (id TEXT PRIMARY KEY, body TEXT NOT NULL)')
+        yield db
+        db.commit()
+    except BaseException:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 def save(meeting):
     with database() as db:
