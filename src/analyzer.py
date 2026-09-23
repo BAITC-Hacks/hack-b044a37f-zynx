@@ -65,6 +65,8 @@ def analyze_transcript(
                 source_ids=list(item.get("source_ids") or []),
                 issues=list(item.get("issues") or []),
                 reviewed=bool(item.get("reviewed", False)),
+                deadline_text=str(due_text) if due_text is not None else None,
+                id=str(item.get("id") or ""),
             )
         )
     warnings = [str(value) for value in result.get("warnings", [])]

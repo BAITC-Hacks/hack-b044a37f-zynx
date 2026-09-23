@@ -24,9 +24,32 @@ class BackendModelTests(unittest.TestCase):
             TranscriptSegment(start=2, end=1, text="invalid")
 
     def test_task_serialization_uses_frontend_names(self):
-        task = MeetingTask(task="Подготовить план", responsible="Айдана", deadline="2026-10-15")
+        task = MeetingTask(
+            task="Подготовить план",
+            responsible="Айдана",
+            deadline="2026-10-15",
+            deadline_text="15 октября",
+            id="task-1",
+        )
         self.assertEqual(task.to_dict()["responsible"], "Айдана")
-        self.assertNotIn("owner", task.to_dict())
+        self.assertEqual(task.to_dict()["owner"], "Айдана")
+        self.assertEqual(task.to_dict()["due_text"], "15 октября")
+        self.assertEqual(task.to_dict()["due_date"], "2026-10-15")
+        self.assertEqual(task.to_dict()["id"], "task-1")
+
+    def test_meeting_result_matches_existing_web_result_contract(self):
+        from src.models import MeetingResult
+
+        result = MeetingResult(
+            transcript=[TranscriptSegment(start=0, end=1, text="Берем")],
+            tasks=[MeetingTask(task="Подготовить план", responsible="Айдана")],
+            summary="Обсудили план",
+        )
+        payload = result.to_dict()
+        self.assertEqual(payload["transcript"][0]["speaker"], "SPEAKER_UNKNOWN")
+        self.assertEqual(payload["turns"][0]["id"], 1)
+        self.assertIn("owner", payload["tasks"][0])
+        self.assertIn("due_date", result.to_app_result()["tasks"][0])
 
 
 class BackendAnalyzerTests(unittest.TestCase):
